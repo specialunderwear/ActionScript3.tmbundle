@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>beforeRunningCommand</key>
+	<string>nop</string>
+	<key>command</key>
+	<string>#!/usr/bin/env ruby
+
+require ENV['TM_SUPPORT_PATH'] + '/lib/exit_codes'
+require ENV['TM_BUNDLE_SUPPORT'] + '/lib/flex_env'
+
+out = ""
+
+c = ClassParser.new
+c.load(STDIN.read.strip,"super")
+
+l = CompletionsList.new(c)
+m = l.overridables
+
+r = TextMate::UI.menu(m) if m.size &gt; 0
+
+FlexMate.tooltip(c.exit_message)
+
+if r != nil
+
+	meth = r['data'].to_s
+	meth_call = meth.gsub( /:[\w="']+/, "")
+
+	type = r['typeof']	
+	type = "void" if type == nil
+	
+	out = "override public function #{meth}:#{type}\n{\n\t$1super.#{meth_call};\n}$0"
+	
+	TextMate.exit_insert_snippet(out)
+	
+else
+	out = "override"
+	TextMate.exit_insert_text(out)
+end
+
+
+</string>
+	<key>input</key>
+	<string>document</string>
+	<key>name</key>
+	<string>override smart</string>
+	<key>output</key>
+	<string>afterSelectedText</string>
+	<key>scope</key>
+	<string>source.actionscript.3 meta.class.actionscript.3</string>
+	<key>tabTrigger</key>
+	<string>over</string>
+	<key>uuid</key>
+	<string>D9DF9ECE-B5AB-4C7C-9B02-116209E29061</string>
+</dict>
+</plist>
