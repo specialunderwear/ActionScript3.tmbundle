@@ -23,7 +23,7 @@ function checkForSpaces {
 #search for the flex install directory.
 set_flex_path -t
 
-#Set and cd to TM_PROJECT_DIR 
+#Set and cd to TM_PROJECT_DIR
 cd_to_tmproj_root
 
 if [ "$TM_FLEX_FILE_SPECS" == "" ]; then
@@ -31,7 +31,7 @@ if [ "$TM_FLEX_FILE_SPECS" == "" ]; then
 	exit 206;
 fi
 
-if [[ !(-f "$TM_PROJECT_DIR/$TM_FLEX_FILE_SPECS") ]]; then 
+if [[ !(-f "$TM_PROJECT_DIR/$TM_FLEX_FILE_SPECS") ]]; then
 	echo "The TM_FLEX_FILE_SPECS file:"
 	echo "    $TM_FLEX_FILE_SPECS"
 	echo "cannot be found."
@@ -54,12 +54,20 @@ checkForSpaces "$TM_PROJECT_DIR/$TM_FLEX_OUTPUT" "$MXMLC_O"
 checkForSpaces "$TM_PROJECT_DIR/$TM_FLEX_FILE_SPECS" "$MXMLC_FS"
 checkForSpaces "$TM_AS3_LIB_PATH" "$MXMLC_SP"
 
+if [[(-n "$TM_FLEX_DEBUG")]]; then
+MXMLC_ARGS="mxmlc -o=$MXMLC_O -file-specs=$MXMLC_FS -debug=true $TM_FLEX_OPTIONS"
+else
 MXMLC_ARGS="mxmlc -o=$MXMLC_O -file-specs=$MXMLC_FS"
+fi
 
 if [ "$TM_AS3_LIB_PATH" != "" ]; then
 	MXMLC_ARGS="$MXMLC_ARGS -sp+=$TM_AS3_LIB_PATH"
 fi
 	
-"$TM_BUNDLE_SUPPORT/lib/fcsh_terminal" "$FCSH" "$MXMLC_ARGS" >/dev/null; 
+if [[ "$OS" != 10.4.* ]]; then
+   "$TM_BUNDLE_SUPPORT/lib/fcsh_terminal" "$FCSH" "$MXMLC_ARGS" >/dev/null;
+else
+	osascript "$TM_BUNDLE_SUPPORT/lib/fsch_iTerm.applescript" "$FCSH" "$MXMLC_ARGS" >/dev/null;
+fi
 
 exit 200;

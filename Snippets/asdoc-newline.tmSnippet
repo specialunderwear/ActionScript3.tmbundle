@@ -4,9 +4,10 @@
 <dict>
 	<key>content</key>
 	<string>
-*	</string>
+* </string>
 	<key>keyEquivalent</key>
-	<string></string>
+	<string>
+</string>
 	<key>name</key>
 	<string>Documentation Newline</string>
 	<key>scope</key>

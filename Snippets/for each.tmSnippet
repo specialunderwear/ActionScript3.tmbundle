@@ -3,8 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>content</key>
-	<string>for each (var ${1:item}:${2:Object} in ${3:obj})
-{
+	<string>for each (var ${1:item}:${2:Object} in ${3:obj}) {
 	$0
 }</string>
 	<key>name</key>

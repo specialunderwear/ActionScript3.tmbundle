@@ -5,7 +5,7 @@
 	<key>content</key>
 	<string>default ${1:expression} :
 	$0
-break;</string>
+	break;</string>
 	<key>name</key>
 	<string>default</string>
 	<key>scope</key>
