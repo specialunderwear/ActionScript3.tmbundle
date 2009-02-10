@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>beforeRunningCommand</key>
+	<string>nop</string>
+	<key>command</key>
+	<string>#!/usr/bin/env ruby -wKU
+
+require ENV['TM_BUNDLE_SUPPORT']+'/lib/flex_env'
+word = ENV['TM_CURRENT_WORD']
+
+project = "#{ENV['TM_PROJECT_DIRECTORY']}"
+
+
+best_paths = []
+package_paths = []		
+
+# Collect all .as and .mxml files with a filename that contains the search
+# term. When used outside a project this step is skipped.
+TextMate.each_text_file do |file|
+  if file =~ /\b#{word}\w*\.(as|mxml)$/
+
+    if file =~ /#{word}\.(as|mxml)$/
+      best_paths &lt;&lt; file
+    else
+      package_paths &lt;&lt; file
+    end
+
+  end
+end
+
+if package_paths.size &gt; 0 and best_paths.size &gt; 0
+  package_paths = best_paths + ['-'] + package_paths
+else
+  package_paths = best_paths + package_paths
+end
+
+filename = ''
+
+if package_paths.empty?
+  TextMate.exit_show_tool_tip("Class not found")
+elsif package_paths.size == 1
+  filename = package_paths.pop
+else
+  # Move any exact hits to the top of the list.
+  best_paths = package_paths.grep( /\.#{word}$/ )
+
+  i = TextMate::UI.menu(package_paths)
+  TextMate.exit_discard() if i == nil
+  filename = package_paths[i]
+
+end
+
+TextMate.go_to :file =&gt; filename
+</string>
+	<key>fallbackInput</key>
+	<string>word</string>
+	<key>input</key>
+	<string>selection</string>
+	<key>keyEquivalent</key>
+	<string>@D</string>
+	<key>name</key>
+	<string>Open Class</string>
+	<key>output</key>
+	<string>discard</string>
+	<key>scope</key>
+	<string>meta.class.actionscript.3</string>
+	<key>uuid</key>
+	<string>ED2E88FE-5D8A-4251-B811-1C179C97A555</string>
+</dict>
+</plist>
