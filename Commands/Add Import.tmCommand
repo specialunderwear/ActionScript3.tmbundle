@@ -9,7 +9,6 @@
 
 require ENV['TM_BUNDLE_SUPPORT']+'/lib/flex_env'
 
-
 word   = ENV['TM_CURRENT_WORD']
 doc    = STDIN.read.strip
 import = SourceTools.find_package(word)
@@ -30,13 +29,10 @@ doc.split("\n").each do |line|
 	elsif line =~ cls || line =~ mta
 		cls = nil
 		a = post
-#	elsif line =~ imp
-#		imps &lt;&lt; line
 	end
 end
 
-irgx = /import\s+#{import.gsub('.', '\.')}/
-clsx = /^\s*$/
+irgx = /^\s*import\s+#{import.gsub('.', '\.')}/
 safe = 0
 indent = ""
 
@@ -51,7 +47,7 @@ imps.each_with_index do |line,index|
 	end
 end
 
-imps[safe] = "#{imps[safe]}\n#{indent}import #{import};"
+imps[safe] = "#{imps[safe]}\n#{indent}import #{import};\n"
 
 TextMate.exit_replace_document( pre.join("\n")+"\n"+imps.join("\n")+"\n"+post.join("\n"))
 </string>

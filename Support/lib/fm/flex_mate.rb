@@ -21,9 +21,9 @@ module FlexMate
 					io << '<h2>Environment var missing</h2>'
 					io << "<p>Please define the environment variable <code>#{evar}</code>.<br><br>"
 					io << configuration_help()
-					io <<	"</p>"
+					io << "</p>"
 
-        end
+				end
 
 			end
 		end
@@ -38,11 +38,42 @@ module FlexMate
 					io << "<h2>#{file} 404</h2>"
 					io << "<p>The environment variable <code>#{file}</code> does not resolve to an actual file.<br><br>"
 					io << configuration_help()
-					io <<	"</p>"
+					io << "</p>"
 
-        end
+				end
 
 			end
+		end
+
+		# Preferences window
+		#
+		def opt_in_to_completions
+
+			# To revert for testing use:
+			#defaults write com.macromates.textmate.flexmate autocomplete_on 'false'
+
+			unless `defaults read com.macromates.textmate.flexmate autocomplete_on`.chop! == "true"
+
+				TextMate::HTMLOutput.show(:title => "Autocompletion Preferences", :sub_title => "" ) do |io|
+
+					io << "<h2>Enable Auto Completion</h2>"
+					io << "<p>Completion support is in an <b>experiemental alpha</b> state, which means:</p>"
+					io << "<ul>"
+					io << "<li>It will break.</li>"
+					io << "<li>Functionality will no doubt change.</li>"
+					io << "<li>Help and support is thin on the ground.</li>"
+					io << "<li>Feedback &amp; Patches are most welcome.</li>"
+					io << "</ul>"
+					io << "<p><div id='msg'>If you are happy with this state of affairs please click <a href='javascript:optIn()'>here</a> to enable it.</div>"
+					io << "</p>"
+					io << '<script type="text/javascript" charset="utf-8">function optIn(){TextMate.system(\'defaults write com.macromates.textmate.flexmate autocomplete_on true\', null); document.getElementById(\'msg\').innerText="Happy Coding!";}</script>'
+
+				end
+
+				TextMate.exit_show_html
+
+			end
+
 		end
 
 		# Checks that the supplied environmental variables and files that they point
@@ -77,7 +108,7 @@ module FlexMate
 					io << configuration_help
 
 				end
-				
+
 				TextMate.exit_show_html
 
 			end
@@ -97,18 +128,18 @@ module FlexMate
 		#
 		def cd_to_tmproj_root
 
-		  unless ENV['TM_PROJECT_FILEPATH']
-		      TextMate.exit_show_tool_tip "This Command should only be run from within a saved TextMate Project."
-		  end
+			unless ENV['TM_PROJECT_FILEPATH']
+				TextMate.exit_show_tool_tip "This Command should only be run from within a saved TextMate Project."
+			end
 
-		  ENV['TM_PROJECT_DIR'] = File.dirname( ENV['TM_PROJECT_FILEPATH'] )
+			ENV['TM_PROJECT_DIR'] = File.dirname( ENV['TM_PROJECT_FILEPATH'] )
 
 		end
 
 		# =================
 		# = SNIPPET UTILS =
 		# =================
-		
+
 		# Converts ActionScript 3 method paramaters and 'snippetises' them for use
 		# with TextMate.
 		#
@@ -142,12 +173,12 @@ module FlexMate
 		# Invoke the completions dialog.
 		#
 		# This method is a customised version of the complete method found in ui.rb
-		# in the main support folder. It double checks incoming data, links 
+		# in the main support folder. It double checks incoming data, links
 		# images to Dialog 2 and automatically snippetizes output when a method is
 		# selected by the user.
 		#
-		def complete(choices,filter=nil,exit_message=nil)
-      
+		def complete(choices,filter=nil,exit_message=nil, &block)
+
 			TextMate.exit_show_tool_tip("Completions need DIALOG2 to function.") unless self.has_dialog2
 
 			if choices[0]['display'] == nil
@@ -155,52 +186,37 @@ module FlexMate
 				exit
 			end
 
+			self.register_completion_images
+
 			pid = fork do
 
 				STDOUT.reopen(open('/dev/null'))
 				STDERR.reopen(open('/dev/null'))
 
-				icon_dir = "#{BUN_SUP}/../icons"
-
-				images = {
-					"Method"   => "#{icon_dir}/Method.png",
-					"Property" => "#{icon_dir}/Property.png",
-					"Effect"   => "#{icon_dir}/Effect.png",
-					"Event"    => "#{icon_dir}/Event.png",
-					"Style"    => "#{icon_dir}/Style.png",
-					"Constant" => "#{icon_dir}/Constant.png",
-					"Getter"   => "#{icon_dir}/Getter.png",
-					"Setter"   => "#{icon_dir}/Setter.png"
-				}
-
-				`"$DIALOG" images --register  '#{images.to_plist}'`
-
 				command = "#{TM_DIALOG} popup --returnChoice"
 				command << " --alreadyTyped #{e_sh filter}" if filter != nil
 				command << " --additionalWordCharacters '_'"
-         
-				result = nil
 
-				plist = { 'suggestions' => choices }
-				plist['images'] = images
+				to_insert = ''
+				result    = nil
 
 				::IO.popen(command, 'w+') do |io|
-					io << plist.to_plist
+					io << { 'suggestions' => choices }.to_plist
 					io.close_write
 					result = OSX::PropertyList.load io rescue nil
 				end
 
-				return nil if result == nil
-				return nil unless result.has_key? 'index'
-				
-				i = result['index'].to_i
-				r = choices[i]
-				m = r['match']
+				# Use a default block if none was provided
+				block ||= lambda do |choice|
 
-				to_insert = r['data']
-				to_insert.sub!( "#{m}", "")
-				to_insert = self.snippetize_method_params(to_insert)
-				to_insert += ";" if r['typeof'] == "void"
+					suffix = choice['data'].sub!( "#{choice['match']}", '')
+					suffix = self.snippetize_method_params(suffix)
+					suffix += ";" if choice['typeof'] == "void"
+
+				end
+
+				# The block should return the text to insert as a snippet
+				to_insert << block.call(result).to_s
 
 				# Insert the snippet if necessary
 				`"$DIALOG" x-insert --snippet #{e_sh to_insert}` unless to_insert.empty?
@@ -208,6 +224,27 @@ module FlexMate
 				self.tooltip(exit_message)
 
 			end
+
+		end
+
+		# Register the completions menu icons with TM DIALOG.
+		#
+		def register_completion_images
+
+			icon_dir = "#{BUN_SUP}/../icons"
+
+			images = {
+				"Method"   => "#{icon_dir}/Method.png",
+				"Property" => "#{icon_dir}/Property.png",
+				"Effect"   => "#{icon_dir}/Effect.png",
+				"Event"    => "#{icon_dir}/Event.png",
+				"Style"    => "#{icon_dir}/Style.png",
+				"Constant" => "#{icon_dir}/Constant.png",
+				"Getter"   => "#{icon_dir}/Getter.png",
+				"Setter"   => "#{icon_dir}/Setter.png"
+			}
+
+			`"$DIALOG" images --register  '#{images.to_plist}'`
 
 		end
 
@@ -231,6 +268,25 @@ module FlexMate
 			return true if os =~ /10\.5\./
 			return false
 
+		end
+
+		# ====================
+		# = User Preferences =
+		# ====================
+
+		def get_preference(key)
+			p = self.preferences
+			p.transaction { p[key] }
+		end
+
+		def set_preference(key,value)
+			p = self.preferences
+			p.transaction { p[key] = value }
+		end
+
+		def preferences
+			require "pstore"
+			PStore.new(File.expand_path( "~/Library/Preferences/com.macromates.textmate.flexmate"))
 		end
 
 	end

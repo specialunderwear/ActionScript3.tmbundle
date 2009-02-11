@@ -7,8 +7,9 @@
 	<key>command</key>
 	<string>#!/usr/bin/env ruby
 
-require ENV['TM_SUPPORT_PATH'] + '/lib/exit_codes'
-require ENV['TM_BUNDLE_SUPPORT']+ '/lib/flex_env'
+require ENV['TM_BUNDLE_SUPPORT'] + '/lib/flex_env'
+
+FlexMate.opt_in_to_completions
 
 p = PropertyInspector.capture
 TextMate.exit_show_tool_tip("No property found.") if p[:ref] == nil
@@ -21,52 +22,64 @@ else
 	c.load(STDIN.read.strip,p[:ref])
 end
 
-#FlexMate.write_to_log_file(c.log)
+FlexMate::Log.puts(c.log)
 
 a = CompletionsList.new(c)
 
-if FlexMate.has_dialog2
-	m = a.list_d2
-	if m.size &gt; 0
-		FlexMate.complete(m,p[:filter],c.exit_message)
-		exit
-	end
-	FlexMate.tooltip c.exit_message
+m = a.list_d2
+if m.size &gt; 0
+	FlexMate.complete(m,p[:filter],c.exit_message)
 	exit
-else
-	m = a.list
 end
 
-m = m.select {|item| item['title'] =~ /^#{p[:filter]}/ } unless p[:filter] == nil
-
-TextMate.exit_show_tool_tip("Auto-completions unvailable") if m.empty?
-
-r = TextMate::UI.menu(m)
-
-FlexMate.tooltip(c.exit_message)
-
-if r != nil
-
-	out = r['data']
-	out.sub!( p[:filter], '') if p[:filter]
-	out = FlexMate.snippetize_method_params(out)
-	out += ";" if r['typeof'] == "void"
-
-	TextMate.exit_insert_snippet(out)
-
-else
-	
-	out = ";" if c.return_type_void
-
-	TextMate.exit_insert_text(out)
-	
+if c.exit_message
+	FlexMate.tooltip( c.exit_message )
+	exit
 end
 
-	
+FlexMate.tooltip "No completions."
 
-
-
-
+# OLD AUTO COMPLETE WITH SUPPORT FOR DIALOG1
+# #FlexMate.write_to_log_file(c.log)
+# 
+# a = CompletionsList.new(c)
+# 
+# if FlexMate.has_dialog2
+#   m = a.list_d2
+#   if m.size &gt; 0
+#     FlexMate.complete(m,p[:filter],c.exit_message)
+#     exit
+#   end
+#   FlexMate.tooltip c.exit_message
+#   exit
+# else
+#   m = a.list
+# end
+# 
+# m = m.select {|item| item['title'] =~ /^#{p[:filter]}/ } unless p[:filter] == nil
+# 
+# TextMate.exit_show_tool_tip("Auto-completions unvailable") if m.empty?
+# 
+# r = TextMate::UI.menu(m)
+# 
+# FlexMate.tooltip(c.exit_message)
+# 
+# if r != nil
+# 
+#   out = r['data']
+#   out.sub!( p[:filter], '') if p[:filter]
+#   out = FlexMate.snippetize_method_params(out)
+#   out += ";" if r['typeof'] == "void"
+# 
+#   TextMate.exit_insert_snippet(out)
+# 
+# else
+#   
+#   out = ";" if c.return_type_void
+# 
+#   TextMate.exit_insert_text(out)
+#   
+# end
 </string>
 	<key>input</key>
 	<string>document</string>
@@ -77,7 +90,7 @@ end
 	<key>output</key>
 	<string>afterSelectedText</string>
 	<key>scope</key>
-	<string>source.actionscript.3 meta.class.actionscript.3, meta.scope.following.dot.actionscript.3</string>
+	<string>source.actionscript.3 meta.package.actionscript.3 meta.class.actionscript.3, source.actionscript.3 meta.package.actionscript.3 meta.class.actionscript.3 meta.scope.following.dot.actionscript.3</string>
 	<key>uuid</key>
 	<string>54A320D0-2134-4DE0-9A6B-F341D39A7C0C</string>
 </dict>
