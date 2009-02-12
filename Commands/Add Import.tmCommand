@@ -35,6 +35,7 @@ end
 irgx = /^\s*import\s+#{import.gsub('.', '\.')}/
 safe = 0
 indent = ""
+clsx = /^\s*$/
 
 imps.each_with_index do |line,index|
 	if line =~ irgx
