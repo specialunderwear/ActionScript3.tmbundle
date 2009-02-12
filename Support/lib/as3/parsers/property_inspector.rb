@@ -30,7 +30,7 @@ module PropertyInspector
 			end
 			
 			# Stop looking when we hit these chars.
-			stop_match = /[\s=;,:"']/
+			stop_match = /[\[\s=;,:"']/
 			
 			# Casting using the as operator.
 			as_regexp = /\bas\b\s+(\w+)/
@@ -48,7 +48,7 @@ module PropertyInspector
 
 				# Make sure we stop if we hit a closing nest char.
 				break if current_letter == "("
-				
+
 				if current_letter =~ /\)/
 					
 					while i >= 0
