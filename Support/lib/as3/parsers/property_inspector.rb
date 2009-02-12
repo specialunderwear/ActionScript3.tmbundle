@@ -48,7 +48,8 @@ module PropertyInspector
 
 				# Make sure we stop if we hit a closing nest char.
 				break if current_letter == "("
-
+        break if current_letter == "]"
+        
 				if current_letter =~ /\)/
 					
 					while i >= 0
