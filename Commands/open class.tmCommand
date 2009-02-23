@@ -67,7 +67,7 @@ end
 	<key>output</key>
 	<string>discard</string>
 	<key>scope</key>
-	<string>meta.class.actionscript.3</string>
+	<string>source.actionscript.3</string>
 	<key>uuid</key>
 	<string>ED2E88FE-5D8A-4251-B811-1C179C97A555</string>
 </dict>

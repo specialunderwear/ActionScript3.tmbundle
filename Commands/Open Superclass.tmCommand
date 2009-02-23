@@ -45,8 +45,6 @@ end
 </string>
 	<key>input</key>
 	<string>document</string>
-	<key>keyEquivalent</key>
-	<string>@D</string>
 	<key>name</key>
 	<string>Open Superclass</string>
 	<key>output</key>
