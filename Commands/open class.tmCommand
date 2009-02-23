@@ -9,53 +9,50 @@
 
 require ENV['TM_BUNDLE_SUPPORT']+'/lib/flex_env'
 word = ENV['TM_CURRENT_WORD']
-
 project = "#{ENV['TM_PROJECT_DIRECTORY']}"
 
+file = STDIN.read.strip
 
-best_paths = []
-package_paths = []		
+p = PropertyInspector.property_chain
 
-# Collect all .as and .mxml files with a filename that contains the search
-# term. When used outside a project this step is skipped.
-TextMate.each_text_file do |file|
-  if file =~ /\b#{word}\w*\.(as|mxml)$/
+#FlexMate::Log.puts("property_chain: " + p.join('------') )
 
-    if file =~ /#{word}\.(as|mxml)$/
-      best_paths &lt;&lt; file
-    else
-      package_paths &lt;&lt; file
-    end
+w = ClassParser.new
 
-  end
+paths = w.path_list(file, p)
+
+#FlexMate::Log.puts("paths: " + paths.join("\n"))
+
+existing_paths = []
+
+paths.each do |path|
+	if File.exists? "#{project}/#{path}"
+		existing_paths &lt;&lt; path
+	end
 end
 
-if package_paths.size &gt; 0 and best_paths.size &gt; 0
-  package_paths = best_paths + ['-'] + package_paths
+if existing_paths.empty?
+	TextMate.exit_show_tool_tip("no such class found #{word}")
+elsif existing_paths.size == 1
+	filename = existing_paths[0]
 else
-  package_paths = best_paths + package_paths
+	FlexMate::Log.puts('it is more then one item')
+	
+	i = TextMate::UI.menu(existing_paths)
+	TextMate.exit_discard() if i == nil
+	filename = existing_paths[i]
 end
 
-filename = ''
+FlexMate::Log.puts("#{project}/#{filename}")
 
-if package_paths.empty?
-  TextMate.exit_show_tool_tip("Class not found")
-elsif package_paths.size == 1
-  filename = package_paths.pop
+if File.exists? "#{project}/#{filename}"
+	TextMate.go_to :file =&gt; "#{project}/#{filename}"
 else
-  # Move any exact hits to the top of the list.
-  best_paths = package_paths.grep( /\.#{word}$/ )
-
-  i = TextMate::UI.menu(package_paths)
-  TextMate.exit_discard() if i == nil
-  filename = package_paths[i]
-
+	TextMate.exit_show_tool_tip("no such file found #{project}/#{filename}")
 end
-
-TextMate.go_to :file =&gt; filename
 </string>
 	<key>fallbackInput</key>
-	<string>word</string>
+	<string>document</string>
 	<key>input</key>
 	<string>selection</string>
 	<key>keyEquivalent</key>
