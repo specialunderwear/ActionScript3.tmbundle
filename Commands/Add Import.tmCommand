@@ -67,7 +67,7 @@ end
 	<key>input</key>
 	<string>document</string>
 	<key>keyEquivalent</key>
-	<string>@I</string>
+	<string>@|</string>
 	<key>name</key>
 	<string>Import Class</string>
 	<key>output</key>
