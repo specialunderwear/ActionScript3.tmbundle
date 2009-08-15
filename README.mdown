@@ -1,6 +1,18 @@
 TextMate ActionScript 3 Bundle
 ==============================
 
+Sg Branch
+-----------------
+
+My work in progress branch of the bundle, the version I use on a day to day basis whilst developing. Essentially it slims down the 'master' branch and adds a little alpha and beta flavor. Maintenance, tweaks and feature improvements will be found here first - but won't be guaranteed to make it into the official bundle.
+
+'master' differences:
+
+ * Tidy command.
+ * FDB Support
+    * Set breakpoints using  `/*>BP<*/`
+    * Start Debugger - Parses current doc for breakpoints and sets them in a fdb session.
+ 
 Installation
 ------------
 

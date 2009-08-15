@@ -1,19 +1,22 @@
 #!/usr/bin/env ruby
 # encoding: utf-8
 
-if ENV['TM_PROJECT_DIRECTORY']
+require ENV['TM_SUPPORT_PATH'] + '/lib/escape'
+require ENV['TM_SUPPORT_PATH'] + '/lib/exit_codes'
+require ENV['TM_SUPPORT_PATH'] + '/lib/textmate'
+require ENV['TM_SUPPORT_PATH'] + '/lib/tm/process'
 
-  SUPPORT = ENV['TM_SUPPORT_PATH']
-  BUN_SUP = ENV['TM_BUNDLE_SUPPORT']
+require File.expand_path(File.dirname(__FILE__)) + '/../lib/add_lib'
 
-  require SUPPORT + '/lib/exit_codes'
-  require SUPPORT + '/lib/escape'
-  require SUPPORT + '/lib/textmate'
-  require SUPPORT + '/lib/web_preview'
-  require SUPPORT + '/lib/tm/htmloutput'
+require 'fm/flex_mate'
+require 'fm/sdk'
+require 'fm/compiler'
+require 'as3/source_tools'
 
-  require BUN_SUP + '/lib/fm/flex_mate'
-  require BUN_SUP + '/lib/fm/sdk'
+if ENV['TM_PROJECT_DIRECTORY'] && ENV['TM_FLEX_USE_FCSH']
+
+  require ENV['TM_SUPPORT_PATH'] + '/lib/web_preview'
+  require ENV['TM_SUPPORT_PATH'] + '/lib/tm/htmloutput'
 
   # Start by trying to add the Flex SDK bin to $PATH then testing for fcsh.
   FlexMate::SDK.add_flex_bin_to_path
@@ -21,12 +24,43 @@ if ENV['TM_PROJECT_DIRECTORY']
   TextMate.require_cmd "fcsh"
 
   bp = ENV['TM_PROJECT_DIRECTORY']
+
+  # Simple euristic: take the first *.as|mxml file in the root folder
+  # and use it if no TM_FLEX_FILE_SPECS is set - from Davide 'Folletto' Casali 
+  if !ENV['TM_FLEX_FILE_SPECS']
+
+    src_dir = ENV['TM_PROJECT_DIRECTORY']
+    src_prefix = ''
+    if File.exist?(ENV['TM_PROJECT_DIRECTORY']+'/src')
+      src_dir = ENV['TM_PROJECT_DIRECTORY']+'/src'
+      src_prefix = 'src/'
+    end
+    
+    Dir.chdir(src_dir)
+    Dir['*.as','*.mxml'].sort.each do |name|	
+  		
+  		ENV['TM_FLEX_FILE_SPECS'] = src_prefix+name #File.expand_path(name) # full path
+  		
+  		#TODO: Link to usual src dirs and improve sub with a regexp that
+      #matches src backwards from the end of line.
+      if File.exist?( ENV['TM_PROJECT_DIRECTORY'] + '/bin' )
+        ENV['TM_FLEX_OUTPUT'] = 'bin/'+name.sub(/\.(as|mxml)$/, '.swf')
+      else
+        ENV['TM_FLEX_OUTPUT'] = name.sub(/\.(as|mxml)$/, '.swf')
+      end
+      
+  		break
+  	end
+  end
   
-  # TODO check for custom build files and execute them where they exist.
-  #custom = "#{bp}/#{ENV['TM_FLEX_BUILD_FILE']}"  
-  #if File.executable?(custom)
-  # `#{e_sh(custom)}`
-  #end
+  #Check for custom build files and execute them where they exist.
+  custom = "#{bp}/#{ENV['TM_FLEX_BUILD_FILE']}"
+  if File.file?(custom) && File.executable?(custom)    
+    TextMate::Process.run(custom) do |str|
+      STDOUT << str
+    end
+    TextMate.exit_show_html
+  end
   
   s = { :files => ['TM_FLEX_FILE_SPECS'], 
         :evars => ['TM_FLEX_OUTPUT'],
@@ -44,11 +78,11 @@ if ENV['TM_PROJECT_DIRECTORY']
   
   `osascript -e 'tell application "Terminal" to activate'` unless ENV['TM_FLEX_BACKGROUND_TERMINAL']
   `#{e_sh ENV['TM_BUNDLE_SUPPORT']}/lib/fcsh_terminal \"#{fcsh}\" \"#{mxmlc_args}\" >/dev/null;`
+
+  TextMate.exit_discard
   
 else
   
-  require ENV['TM_BUNDLE_SUPPORT']+'/lib/flex_env'
-
   STDOUT.sync = true
 
   c = FlexMate::Compiler.new
@@ -57,4 +91,4 @@ else
   #TODO: Get the html window to show immediately.
   TextMate.exit_show_html
 
-end  
+end
