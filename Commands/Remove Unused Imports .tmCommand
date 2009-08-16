@@ -58,7 +58,7 @@ end
 	<key>input</key>
 	<string>document</string>
 	<key>keyEquivalent</key>
-	<string>^I</string>
+	<string>^|</string>
 	<key>name</key>
 	<string>Remove Unused Imports </string>
 	<key>output</key>
