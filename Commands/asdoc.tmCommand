@@ -42,6 +42,7 @@ def generate_method_doc(sig)
 		name = arg[0]
 		type = arg[1].sub(/=.*$/,'')
 		puts " * @param #{name} ${#{count}:#{type}}"
+		count+=1
 	}
 	puts " * @private" if args.empty?
 	puts " * @return #{sig[:returns]}" unless sig[:returns] == 'void'
