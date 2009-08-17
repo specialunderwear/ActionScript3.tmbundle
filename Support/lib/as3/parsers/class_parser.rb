@@ -1080,14 +1080,6 @@ class ClassParser
 
 	end
 
-  # get list of class paths that satisfy reference
-  #
-  def path_list(doc, reference)
-    type = find_type(doc, reference)
-    paths = imported_class_to_file_path(doc, type)
-    paths += imported_class_to_file_path(doc, ENV['TM_CURRENT_WORD'])
-  end
-  
 	# Returns the type of the reference within the doc.
 	#
 	def find_type(doc,reference)

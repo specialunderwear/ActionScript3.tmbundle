@@ -34,7 +34,9 @@ Source can be viewed or forked via GitHub: [http://github.com/simongregory/actio
 Conventions
 -----------
 
-This fork does not follow the flex code conventions.
+ActionScript formatting follows the guidelines Adobe use for the Flex SDK. They can be found [here](http://opensource.adobe.com/wiki/display/flexsdk/Coding+Conventions).
+
+For Bundle Conventions please follow the TextMate conventions outlined [here](http://svn.textmate.org/trunk/Conventions.txt).
 
 Support
 -------
