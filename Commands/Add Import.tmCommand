@@ -7,16 +7,22 @@
 	<key>command</key>
 	<string>#!/usr/bin/env ruby -wKU
 
-require ENV['TM_BUNDLE_SUPPORT']+'/lib/flex_env'
+require ENV['TM_BUNDLE_SUPPORT']+'/lib/c_env'
 
 word   = ENV['TM_CURRENT_WORD']
+line   = ENV['TM_CURRENT_LINE']
 doc    = STDIN.read.strip
 import = SourceTools.find_package(word)
+cla    = import.split('.').pop()
+
+line_num = ENV['TM_LINE_NUMBER']
+line_idx = ENV['TM_LINE_INDEX']
+
+doc[line] = doc[line].gsub(word, cla)
 
 pkg = /^\s*package\b\s*([\w+\.]*)/
-cls = /^\s*(public|final)\s+(final|public)?\s*\bclass\b/
+cls = /^\s*(public|final)\s+(final|public)?\s*\b(class|interface)\b/
 mta = /^\s*\[(Style|Bindable|Event|Embed|SWF)/
-imp = /^\s*import\s+([\w+\.]+)$/
 
 pre, imps, post = [], [], []
 a = pre
@@ -32,36 +38,42 @@ doc.split("\n").each do |line|
 	end
 end
 
-irgx = /^\s*import\s+#{import.gsub('.', '\.')}/
+irgx = /^\s*import\s+#{import.gsub('.', '\.')}(\s|;)/
 safe = 0
 indent = ""
-clsx = /^\s*$/
 
 imps.each_with_index do |line,index|
-	if line =~ irgx
+	if line =~ irgx		
+		TextMate.exit_insert_text(cla.sub(word,'')) if word != cla
 		TextMate.exit_show_tool_tip("#{word} already imported")
-	elsif line =~ clsx
-		safe = index
-		clsx = nil
 	elsif line =~ /^(\s*)import\s+/
-		indent = "	"
+		indent = $1
+		safe = index
 	end
 end
 
 imps[safe] = "#{imps[safe]}\n#{indent}import #{import};"
 
-TextMate.exit_replace_document( pre.join("\n")+"\n"+imps.join("\n")+"\n"+post.join("\n"))
+print pre.join("\n")+"\n"+imps.join("\n")+"\n"+post.join("\n")
+
+line_idx = (line_idx.to_i-word.length)+(import.split(".")[-1].length)+1
+
+pid = fork do
+	STDOUT.reopen(open('/dev/null'))
+	STDERR.reopen(open('/dev/null'))
+	TextMate.go_to(:line =&gt; line_num.to_i+1, :column =&gt; line_idx)
+end
 </string>
 	<key>input</key>
 	<string>document</string>
 	<key>keyEquivalent</key>
 	<string>@|</string>
 	<key>name</key>
-	<string>Import Class</string>
+	<string>Import</string>
 	<key>output</key>
-	<string>discard</string>
+	<string>replaceDocument</string>
 	<key>scope</key>
-	<string>source.actionscript.3 meta.package.actionscript.3 meta.class.actionscript.3</string>
+	<string>source.actionscript.3 meta.package.actionscript.3 meta.class.actionscript.3, meta.interface.actionscript.3</string>
 	<key>uuid</key>
 	<string>B42093AC-0F65-4760-856C-23E51A54CD84</string>
 </dict>

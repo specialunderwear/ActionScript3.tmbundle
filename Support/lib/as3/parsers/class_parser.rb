@@ -1,11 +1,24 @@
 #!/usr/bin/env ruby
-#
-#  Copyright 2008 Simon Gregory.
-#  Released under the Creative Commons Attribution-Noncommercial-Share Alike 3.0 Unported License.
-#  See http://creativecommons.org/licenses/by-nc-sa/3.0/ for details.
+# encoding: utf-8
 
+################################################################################
 #
-#require File.dirname(__FILE__) + '/../../flex_mate'
+#		Copyright 2009 Simon Gregory
+#		
+#		This program is free software: you can redistribute it and/or modify
+#		it under the terms of the GNU General Public License as published by
+#		the Free Software Foundation, either version 3 of the License, or
+#		(at your option) any later version.
+#		
+#		This program is distributed in the hope that it will be useful,
+#		but WITHOUT ANY WARRANTY; without even the implied warranty of
+#		MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#		GNU General Public License for more details.
+#		
+#		You should have received a copy of the GNU General Public License
+#		along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+################################################################################
 
 # A Utilty class to convert an ActionScript class into
 # list of it's constituent methods and properties.
@@ -306,7 +319,7 @@ class ClassParser
 			    @getsets << $2.to_s
 			elsif line =~ @i_face.methods
 				if $5 != nil and $2 != nil
-					@methods << "#{$1.to_s}(#{$2.to_s}):#{$5.to_s}"
+					@methods << "#{$1.to_s}(#{$2.to_s}):#{$5.to_s}"					
 				else
 					method_scans << $1
 				end		
@@ -363,8 +376,8 @@ class ClassParser
 		doc.scan(/^\s*(public dynamic class Object)/)
 		
 		unless $1
-			log_append("Loading super class 'Object' 'Object.as'.")
-			return load_class(["Object.as"]) 
+			log_append("Loading super class 'Object' 'Object'.")
+			return load_class(["Object"]) 
 		end
 		
 		return nil
@@ -421,7 +434,7 @@ class ClassParser
 		store_interface_members(doc)
 
 		ip = load_interface_parents(doc)
-	  next_docs = ip[:parents] || nil
+	  next_docs = ip[:parents] || nil if ip
 		
 		unless next_docs.nil? or next_docs.empty?
 			next_docs.each { |d| add_interface(d) }
@@ -474,21 +487,9 @@ class ClassParser
 
 		if ENV['TM_PROJECT_DIRECTORY']
 
-			src_list = '"src"'
-			
-			# This isn't working properly yet as it only matches the top level lib
-			# within the Proj.
-			#if ENV['TM_AS3_USUAL_SRC_DIRS'] != nil
-			#	src_a = ENV['TM_AS3_USUAL_SRC_DIRS'].split(":")
-			#	src_list = '"' + src_a.pop() + '"'
-			#	src_a.each do |d|
-			#		src_list += ' -or -name "'+d+'"'
-			#	end
-			#end
-			
-			# Note Errors are redirected and suppressed (ie Permissions Errors)
-			@src_dirs = `find -d "$TM_PROJECT_DIRECTORY" -maxdepth 5 -name #{src_list} -print 2>/dev/null`
-			
+			src_list = (ENV['TM_AS3_USUAL_SRC_DIRS'] != nil) ? ENV['TM_AS3_USUAL_SRC_DIRS'].gsub(':','|') : "src"
+			@src_dirs = `find -dE "$TM_PROJECT_DIRECTORY" -maxdepth 5 -regex '.*\/(#{src_list})' -print 2>/dev/null`
+
 		end
 
 		cs = "#{@completion_src}/data/completions"
@@ -504,7 +505,7 @@ class ClassParser
 		# otherwise go looking for the sdk.
 		unless add_src_dir("#{cs}/frameworks/flex_3")
 			fx = FlexMate::SDK.src
-			add_src_dir(fx)
+			add_src_dir(fx) unless fx.nil?
 		end
 
 		#log_append( "src_dirs " + @src_dirs )
@@ -527,25 +528,36 @@ class ClassParser
 	#
 	def load_class(paths)
 
-		urls=[]
+		#urls=[]
 
 		@src_dirs.each do |d|
 
 			paths.each do |path|
 
 				uri = d.chomp + "/" + path.chomp
+				as_uri = "#{uri}.as"
 
-				if @loaded_documents.include?(uri)
-					log_append("Already added #{uri}")
-					return nil 
+				if @loaded_documents.include?(as_uri)
+					log_append("Already added #{as_uri}")
+					return nil
 				end
-				
+
 				#FIX: The assumption that we'll only find one match.
-				if File.exists?(uri)
-					@loaded_documents << uri
-					f = File.open(uri,"r" ).read.strip
-					f = load_includes(f,uri)
+				if File.exists?(as_uri)
+					
+					@loaded_documents << as_uri
+					f = File.open(as_uri,"r" ).read.strip
+					f = load_includes(f,as_uri)
 					return strip_comments(f)
+
+				#where we find a mxml file exit and tell the user why.
+				elsif File.exists?("#{uri}.mxml")
+
+					mxml_file = File.basename("#{uri}.mxml")
+					log_append("Failing with '#{mxml_file}' as we need an mxml parser first - anyone?")
+					@exit_message = "WARNING: #{mxml_file} couldn't be loaded (mxml files are not yet supported)."
+					return nil
+
 				end
 
 			end
@@ -554,7 +566,7 @@ class ClassParser
 
 		as_file = File.basename(paths[0])
 
-		@exit_message = "WARNING: Completions incomplete.\nThe class #{as_file.sub!(/\.as$/,'')} was not found."
+		@exit_message = "WARNING: Completions incomplete.\nThe class #{as_file} was not found."
 
 		log_append("Unable to load '#{as_file}'")
 
@@ -567,7 +579,7 @@ class ClassParser
 	# path and returned.
 	#
 	# Returns an array of possible relative file paths, such as:
-	# ["org/helvector/Foo.as","Foo.as"]
+	# ["org/helvector/Foo","Foo"]
 	#
 	def imported_class_to_file_path(doc,class_name)
 
@@ -577,7 +589,7 @@ class ClassParser
 		doc.scan( /^\s*import\s+(([\w+\.]+)(\b#{class_name}\b))/)
 
 		unless $1.nil?
-			p = $1.gsub(".","/")+".as"
+			p = $1.gsub(".","/")
 			return possible_paths << p
 		end
 
@@ -587,14 +599,14 @@ class ClassParser
 
 		# Collect all wildcard imports here.
 		doc.each do |line|
-		 	possible_paths << $1.gsub(".","/")+class_name+".as" if line =~ wild
-			possible_paths << $1.gsub(".","/")+"/"+class_name+".as" if line =~ pckg
+		 	possible_paths << $1.gsub(".","/")+class_name if line =~ wild
+			possible_paths << $1.gsub(".","/")+"/"+class_name if line =~ pckg
 			break if line =~ cls
 		end
 
 		# Even though we are very likely to have a package path by this point
 		# add in a top level match for safetys sake.
-		return possible_paths << "#{class_name}.as"
+		return possible_paths << "#{class_name}"
 
 	end
 
@@ -1024,6 +1036,49 @@ class ClassParser
 		# TODO: Check type of method return statements.
 
 	end
+	
+	# Returns a list of class paths that satisfy reference or word.
+	#
+	def path_list(doc, reference, word)
+		
+		#Where the word and ref don't match and it 
+		#looks like a Class name switch to it.
+		if reference != word
+			if word =~ /^[A-Z]/
+				reference = word
+			end
+		end
+		
+		type = find_type(doc, reference)
+		
+		return [] unless type
+		
+	  paths = imported_class_to_file_path(doc, type)
+
+		create_src_list()
+		existing_paths = []
+
+		@src_dirs.each do |d|
+
+			paths.each do |path|
+
+				uri = d.chomp + "/" + path.chomp
+				as = "#{uri}.as"
+				mx = "#{uri}.mxml"
+
+				if File.exists?(as)
+					existing_paths << as
+				elsif File.exists?(mx)
+					existing_paths << mx
+				end
+
+			end
+
+		end
+
+		existing_paths.uniq
+
+	end
 
   # get list of class paths that satisfy reference
   #
@@ -1056,7 +1111,7 @@ class ClassParser
 	#
 	def load_reference(class_ref,include_meta=false)
 		@include_metadata = include_meta
-		path = [class_ref.gsub(".","/") + ".as"]
+		path = [class_ref.gsub(".","/")]
 		cdoc = load_class(path)
 		add_public(cdoc)
 	end

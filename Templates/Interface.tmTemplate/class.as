@@ -4,27 +4,30 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////
 
-package ${TM_CLASS_PATH} {
+package ${TM_CLASS_PATH}
+{
 
-/**
- *	Description
- *
- *	@langversion ActionScript 3.0
- *	@playerversion Flash 9.0
- *
- *	@author ${TM_FULLNAME}
- *	@since  ${TM_DATE}
- */
-public interface ${TM_NEW_FILE_BASENAME} {
+	/**
+	 * Interface describing the contract for...
+	 * 
+	 * @langversion ActionScript 3.0
+	 * @playerversion Flash 9.0
+	 * 
+	 * @author ${TM_FULLNAME}
+	 * @since  ${TM_DATE}
+	 */
+
+	public interface ${TM_NEW_FILE_BASENAME}
+	{
 	
-	//--------------------------------------
-	//  PUBLIC METHODS
-	//--------------------------------------
+		//--------------------------------------
+		//  PUBLIC METHODS
+		//--------------------------------------
 	
-	//--------------------------------------
-	//  GETTER/SETTERS
-	//--------------------------------------
+		//--------------------------------------
+		//  GETTER/SETTERS
+		//--------------------------------------
 	
-}
+	}
 
 }
