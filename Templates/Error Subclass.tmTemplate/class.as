@@ -16,6 +16,7 @@ package ${TM_CLASS_PATH}
  * @author ${TM_FULLNAME}
  * @since  ${TM_DATE}
  */
+
 public class ${TM_NEW_FILE_BASENAME} extends Error
 {
 	

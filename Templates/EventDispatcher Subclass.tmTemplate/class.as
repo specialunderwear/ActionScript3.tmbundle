@@ -18,6 +18,7 @@ import flash.events.EventDispatcher;
  * @author ${TM_FULLNAME}
  * @since  ${TM_DATE}
  */
+
 public class ${TM_NEW_FILE_BASENAME} extends EventDispatcher
 {
 	

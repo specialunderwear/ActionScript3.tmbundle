@@ -18,6 +18,7 @@ import flash.display.Sprite;
  * @author ${TM_FULLNAME}
  * @since  ${TM_DATE}
  */
+
 public class ${TM_NEW_FILE_BASENAME} extends Sprite
 {
 	
