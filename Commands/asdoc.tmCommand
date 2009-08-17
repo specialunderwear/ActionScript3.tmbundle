@@ -41,7 +41,7 @@ def generate_method_doc(sig)
 		puts " * @private" if arg.length != 2
 		name = arg[0]
 		type = arg[1].sub(/=.*$/,'')
-		puts " * @param #{name} #{type} ${#{count}}"
+		puts " * @param #{name} ${#{count}:#{type}}"
 	}
 	puts " * @private" if args.empty?
 	puts " * @return #{sig[:returns]}" unless sig[:returns] == 'void'
