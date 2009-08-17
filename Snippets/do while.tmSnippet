@@ -3,8 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>content</key>
-	<string>do
-{
+	<string>do {
 	$2
 }
 while ($1);</string>
