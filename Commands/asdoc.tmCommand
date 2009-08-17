@@ -19,31 +19,6 @@ constructor_regexp = /public\s+function\s+([A-Z]\w+)\s*\(.*\)\s*$/
 override_regexp = /override.*function.*\(/
 method_regex = /(public|private|protected)\s+function\s+(\w+)\s*\(/
 
-def scan_for_method(doc,name)
-	m_rgx = /^\s*(override\s+)?(public|private|protected)\s+function\s+\b#{name}\b\s*\(((?m:[^)]*))\)\s*:\s*(\w+)/
-	doc.scan( m_rgx )
-	if $2 != nil
-		returns = "#{$4}"
-		params = $3.gsub(/(\s|\n)/,'') if $3 != nil
-	end
-	{:params =&gt; params, :returns =&gt; returns}
-end
-
-def generate_method_doc(sig)
-	args = (sig[:params]) ? sig[:params].split(',') : []
-	puts "/**"
-	args.each { |e|
-		arg =  e.split(':')
-		puts " * @private" if arg.length != 2
-		name = arg[0]
-		type = arg[1].sub(/=.*$/,'')
-		puts " * @param #{name} #{type}"
-	}
-	puts " * @private" if args.empty?
-	puts " * @return #{sig[:returns]}" unless sig[:returns] == 'void'
-	print " */"
-end 
-
 method_regex = /(public|private|protected)\s+function\s+(\w+)\s*\(/
 
 def scan_for_method(doc,name)
@@ -59,16 +34,18 @@ end
 def generate_method_doc(sig)
 	args = (sig[:params]) ? sig[:params].split(',') : []
 	puts "/**"
+	puts " * ${1:Description}"
+	count = 2
 	args.each { |e|
 		arg =  e.split(':')
 		puts " * @private" if arg.length != 2
 		name = arg[0]
 		type = arg[1].sub(/=.*$/,'')
-		puts " * @param #{name} #{type}"
+		puts " * @param #{name} #{type} ${#{count}}"
 	}
 	puts " * @private" if args.empty?
 	puts " * @return #{sig[:returns]}" unless sig[:returns] == 'void'
-	print " */"
+	puts " */"
 end
 
 t = SnippetBuilder.new
