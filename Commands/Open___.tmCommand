@@ -10,20 +10,28 @@
 require ENV['TM_BUNDLE_SUPPORT']+'/lib/c_env'
 word = ENV['TM_CURRENT_WORD']
 
-p = PropertyInspector.property_chain
-
-# see if we are in the middle of a word
-unless p.index(word) != nil
-	# if so pop the last item and replace it with the current word
-	chain = p.split('.')
-	last = chain.pop()
-	chain.push(word)
-	p = chain.join('.')
+# identifiers never contain spaces
+if word.index(' ') != nil
+	TextMate.exit_show_tool_tip("The cursor must be at an identifier")
 end
+
+chain = PropertyInspector.property_chain
+chain = chain.split('.')
+# fetch the last word in the property chain
+last = chain.pop()
+
+# see if it is a complete word and non empty
+# this check might be redundant
+if word.index(last) != nil
+	chain.push(word)
+end
+
+# recreate property chain
+chain = chain.join('.')
 
 w = ClassParser.new
 
-paths = w.path_list(STDIN.read.strip, p, word)
+paths = w.path_list(STDIN.read.strip, chain, word)
 
 TextMate.exit_show_tool_tip("#{word} not resolved.") if paths.empty?
 	
