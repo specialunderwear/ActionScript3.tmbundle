@@ -10,10 +10,20 @@
 require ENV['TM_BUNDLE_SUPPORT']+'/lib/c_env'
 word = ENV['TM_CURRENT_WORD']
 
-p = PropertyInspector.capture
+p = PropertyInspector.property_chain
+
+# see if we are in the middle of a word
+unless p.index(word) != nil
+	# if so pop the last item and replace it with the current word
+	chain = p.split('.')
+	last = chain.pop()
+	chain.push(word)
+	p = chain.join('.')
+end
+
 w = ClassParser.new
 
-paths = w.path_list(STDIN.read.strip, p[:ref], word)
+paths = w.path_list(STDIN.read.strip, p, word)
 
 TextMate.exit_show_tool_tip("#{word} not resolved.") if paths.empty?
 	
