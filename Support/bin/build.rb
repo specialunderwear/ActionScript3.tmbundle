@@ -68,13 +68,14 @@ if ENV['TM_PROJECT_DIRECTORY'] && ENV['TM_FLEX_USE_FCSH']
 
   FlexMate.required_settings(s)
 
+  compiler_options = ENV['TM_FLEX_OPTIONS']
   file_specs  = bp + '/' + ENV['TM_FLEX_FILE_SPECS']
   flex_output = bp + '/' + ENV['TM_FLEX_OUTPUT']
   fcsh       = e_sh(ENV['TM_FLEX_PATH'] + '/bin/fcsh')
 
   FlexMate.check_valid_paths([file_specs,flex_output,fcsh])
 
-  mxmlc_args="mxmlc -o=#{flex_output} -file-specs=#{file_specs} -debug=true"
+  mxmlc_args="mxmlc -o=#{flex_output} -file-specs=#{file_specs} -debug=true #{compiler_options}"
   
   `osascript -e 'tell application "Terminal" to activate'` unless ENV['TM_FLEX_BACKGROUND_TERMINAL']
   `#{e_sh ENV['TM_BUNDLE_SUPPORT']}/lib/fcsh_terminal \"#{fcsh}\" \"#{mxmlc_args}\" >/dev/null;`
