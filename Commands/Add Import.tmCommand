@@ -26,6 +26,8 @@ mta = /^\s*\[(Style|Bindable|Event|Embed|SWF)/
 
 pre, imps, post = [], [], []
 a = pre
+
+FlexMate::Log.puts('hai')
 	
 doc.split("\n").each do |line|
 	a &lt;&lt; line

@@ -37,8 +37,7 @@ module SourceTools
 
     # Collect all .as and .mxml files with a filename that contains the search
     # term. When used outside a project this step is skipped.
-    TextMate.each_text_file do |file|
-
+    TextMate.each_text_file_in_project do |file|
       if file =~ /\b#{word}\w*\.(as|mxml)$/
 
         path = file.sub( project, "")
@@ -54,7 +53,7 @@ module SourceTools
       end
 
     end
-
+    FlexMate::Log.puts(best_paths)
     { :exact_matches => best_paths, :partial_matches => package_paths }
 
   end
