@@ -10,7 +10,7 @@ module FlexMate
       def log_file
         #require ENV['TM_SUPPORT_PATH'] + '/lib/escape' 
 				#e_sh 
-				"#{ ENV['HOME']}/Library/Logs/TextMateActionScript3.log"
+				"#{ ENV['HOME']}/Library/Logs/TextMate ActionScript 3.log"
       end
 
       # Initilialise/clear the log.
