@@ -20,7 +20,7 @@ build.rb
 	<key>name</key>
 	<string>Build</string>
 	<key>output</key>
-	<string>showAsHTML</string>
+	<string>discard</string>
 	<key>scope</key>
 	<string>source.actionscript.3, text.xml.mxml, text.xml.flex-config, comment.block.documentation.asdoc</string>
 	<key>uuid</key>
