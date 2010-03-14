@@ -99,18 +99,18 @@ if __FILE__ == $0
   puts FlexMate::BundleTool.bundle_dirs
 
   puts "\n--- Bundle Names (without file extension)"
-  puts FlexMate::BundleTool.find_bundle('ActionScript 3')
+  puts FlexMate::BundleTool.find_bundle('ActionScript-3')
   puts FlexMate::BundleTool.find_bundle('Flex')
   puts FlexMate::BundleTool.find_bundle('Flash')
 
   puts "\n--- Bundle Names (with file extension)"
-  puts FlexMate::BundleTool.find_bundle('ActionScript 3.tmbundle')
+  puts FlexMate::BundleTool.find_bundle('ActionScript-3.tmbundle')
   puts FlexMate::BundleTool.find_bundle('Flex.tmbundle')
   puts FlexMate::BundleTool.find_bundle('Flash.tmbundle')
   puts FlexMate::BundleTool.find_bundle('zzzzzz')
 
   puts "\n--- All ActionScript 3 and Flex Templates"
-  FlexMate::BundleTool.class_template_search(['ActionScript 3', 'Flex']).each { |t|
+  FlexMate::BundleTool.class_template_search(['ActionScript-3', 'Flex']).each { |t|
     puts t['bundle'] + ' ' + t['title']
   }
   
@@ -130,12 +130,12 @@ if __FILE__ == $0
     
     def test_find_without_extension
       assert_equal("#{user_app_sup}/TextMate/Bundles/Flex.tmbundle", FlexMate::BundleTool.find_bundle('Flex')[0])
-      assert_equal("#{user_app_sup}/TextMate/Bundles/ActionScript 3.tmbundle", FlexMate::BundleTool.find_bundle('ActionScript 3'))
+      assert_equal("#{user_app_sup}/TextMate/Bundles/ActionScript-3.tmbundle", FlexMate::BundleTool.find_bundle('ActionScript-3'))
     end
     
     def test_find_with_extension
       assert_equal("#{user_app_sup}/TextMate/Bundles/Flex.tmbundle", FlexMate::BundleTool.find_bundle('Flex.tmbundle')[0])
-      assert_equal("#{user_app_sup}/TextMate/Bundles/ActionScript 3.tmbundle", FlexMate::BundleTool.find_bundle('ActionScript 3.tmbundle'))      
+      assert_equal("#{user_app_sup}/TextMate/Bundles/ActionScript-3.tmbundle", FlexMate::BundleTool.find_bundle('ActionScript-3.tmbundle'))      
     end
     
     def test_templates
