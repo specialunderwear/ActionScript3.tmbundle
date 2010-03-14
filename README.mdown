@@ -18,14 +18,14 @@ Via download:
 
  * Open this [link][bundle_zip]  
  * Unzip the download  
- * Rename the folder to ActionScript-3.tmbundle  
+ * Rename the folder to ActionScript3.tmbundle  
  * Double-click  
  * TextMate handles the rest!  
 
 To install via Git:
 
 		cd ~/"Library/Application Support/TextMate/Bundles/"
-		git clone git://github.com/simongregory/actionscript3-tmbundle.git "ActionScript-3.tmbundle"
+		git clone git://github.com/simongregory/actionscript3-tmbundle.git "ActionScript3.tmbundle"
 		osascript -e 'tell app "TextMate" to reload bundles'
 
 Source can be viewed and forked via [GitHub][repo_master]

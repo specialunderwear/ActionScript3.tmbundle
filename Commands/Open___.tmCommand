@@ -43,7 +43,7 @@ else
 	target = paths[i]
 end
 
-TextMate.exit_show_tool_tip("Intrinsic Class") if target =~ /ActionScript-3.tmbundle/
+TextMate.exit_show_tool_tip("Intrinsic Class") if target =~ /ActionScript3.tmbundle/
 
 TextMate.exit_show_tool_tip("Current file") if ENV['TM_FILEPATH'] == "#{target}"
 

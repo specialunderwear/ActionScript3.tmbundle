@@ -27,7 +27,7 @@ module FlexMate
         init unless File.exist?(log_file)
 
         f = File.open(log_file, "a")
-        f.puts Time.now.strftime("\n[%m/%d/%Y %H:%M:%S]") + " TextMate::ActionScript-3.tmbundle"
+        f.puts Time.now.strftime("\n[%m/%d/%Y %H:%M:%S]") + " TextMate::ActionScript3.tmbundle"
         f.puts text
         f.flush
         f.close
