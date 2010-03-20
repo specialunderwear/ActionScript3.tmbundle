@@ -23,6 +23,10 @@ module FlexMate
       init_html(cmd)
       
       exhaust = get_exhaust
+      
+      # This works... when, occastionally, using TextMate::Process fails. Memory allocation maybe?
+      #{}`#{cmd.line}`.each { |str| STDOUT << exhaust.line(str) }
+
       TextMate::Process.run(cmd.line) do |str|
         STDOUT << exhaust.line(str)
       end
@@ -47,10 +51,11 @@ module FlexMate
     def init_html(cmd)
       
       require ENV['TM_SUPPORT_PATH'] + '/lib/web_preview'
+
       puts html_head( :window_title => "ActionScript 3 Build Command",
                       :page_title => "Build (#{cmd.name})",
-                      :sub_title => "#{cmd.file_specs_name}" )
-      
+                      :sub_title => cmd.file_specs_name )
+
       puts "<h2>Building...</h2>"
       puts "<p><pre>#{cmd.to_s}</pre></p>"
       
@@ -67,6 +72,7 @@ module FlexMate
     #
     def build_tool(settings)
         return CompcCommand.new(settings) if settings.is_swc
+        return AMxmlcCommand.new(settings) if settings.is_air
         return MxmlcCommand.new(settings)
     end
 
@@ -100,9 +106,10 @@ module FlexMate
       cmd = build_tool(s)
       
       fcsh = e_sh(ENV['TM_FLEX_PATH'] + '/bin/fcsh')
-
+      
       #Make sure there are no spaces for fcsh to trip up on.
       FlexMate.check_valid_paths([cmd.file_specs,cmd.o,fcsh])
+      
       init_html(cmd)
       
       `osascript -e 'tell application "Terminal" to activate'` unless ENV['TM_FLEX_BACKGROUND_TERMINAL']
@@ -170,6 +177,39 @@ class CompcCommand < MxmlcCommand
 
 end
 
+# Object to encapsulate a amxmlc command and its arguments.
+#
+class AMxmlcCommand
+  
+  attr_reader :file_specs
+  attr_reader :o
+  attr_reader :name
+  
+  def initialize(settings)
+
+    #Note: If you open the amxmlc tool you find it's just a proxy to mxmlc.
+    #      However using amxmlc with fcsh doesn't work (SDK 3.5) so it's worth 
+    #      the risk of failure by being exposed to internal changes to amxmlc in
+    #      future revisions.
+    @name = 'mxmlc +configname=air'
+    @o = settings.flex_output
+    @file_specs = settings.file_specs
+  end
+
+  def line
+    "#{name} -file-specs=#{e_sh file_specs} -o=#{e_sh o}"
+  end
+
+  def file_specs_name
+    File.basename(file_specs)
+  end
+  
+  def to_s
+    "-file-specs=#{file_specs}\n-o=#{e_sh o}"
+  end
+
+end
+
 if __FILE__ == $0
 
   require ENV['TM_SUPPORT_PATH'] + '/lib/escape'
@@ -187,7 +227,5 @@ if __FILE__ == $0
   FlexMate::Compiler.new.build
   
   #FlexMate::FcshCompiler.new.build
-
-  FlexMate::Compiler.new.build
 
 end
