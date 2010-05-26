@@ -45,7 +45,7 @@ rescue Exception => e
 	
   html_out = TextMate::HTMLOutput.show(
     :title => "AutoCompletion Error",
-    :sub_title => "ActionScript 3"
+    :sub_title => "ActionScript3"
   ) do |io|
     io << <<-HTML		
 			<h2>Exception</h2>

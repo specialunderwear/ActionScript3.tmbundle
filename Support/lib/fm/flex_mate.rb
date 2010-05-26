@@ -90,9 +90,11 @@ module FlexMate
 			files = settings[:files] || []
 			evars = settings[:evars] || []
 
+      base_path += '/' unless base_path =~ /\/$/
+      
 			files.each { |f|				
 				failed_files << f unless ENV[f]
-				failed_files << f unless File.exist?( base_path + '/' + ENV[f].to_s || "" )
+				failed_files << f unless File.exist?( base_path + ENV[f].to_s || "" )
 			}
 
 			evars.each { |e|
@@ -299,10 +301,11 @@ module FlexMate
 				# Use a default block if none was provided
 				block ||= lambda do |choice|
 
-					suffix = choice['data'].sub!( "#{choice['match']}", '')
+					suffix = choice['data'].sub!("#{choice['match']}", '')
 					suffix = self.snippetize_method_params(suffix)
-					suffix += ";" if choice['typeof'] == "void"
-
+					suffix += ";" if choice['typeof'] == 'void'
+					suffix
+					
 				end
 
 				# The block should return the text to insert as a snippet
@@ -316,7 +319,7 @@ module FlexMate
 			end
 
 		end
-
+		
 		# Register the completions menu icons with TM DIALOG.
 		#
 		def register_completion_images
@@ -391,6 +394,7 @@ if __FILE__ == $0
   require ENV['TM_SUPPORT_PATH'] + '/lib/textmate'
 
 	puts "\nsnippetize_method_params:"
+	puts FlexMate.snippetize_method_params( "method(one:Number)")
 	puts FlexMate.snippetize_method_params( "method(one:Number,two:String,three:*, four:Test=10, ...rest)")
 	puts FlexMate.snippetize_method_params( "method(one:Number,
 												two:String,

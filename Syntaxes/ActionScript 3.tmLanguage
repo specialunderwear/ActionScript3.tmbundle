@@ -189,6 +189,10 @@
 				</dict>
 				<dict>
 					<key>include</key>
+					<string>#compiler-metadata-custom</string>
+				</dict>
+				<dict>
+					<key>include</key>
 					<string>#language-elements</string>
 				</dict>
 				<dict>
@@ -401,6 +405,43 @@
 				</dict>
 			</array>
 		</dict>
+		<key>compiler-metadata-custom</key>
+		<dict>
+			<key>begin</key>
+			<string>(\[)\s*\b(\w+)\b</string>
+			<key>beginCaptures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.meta-data.begin.actionscript.3</string>
+				</dict>
+				<key>2</key>
+				<dict>
+					<key>name</key>
+					<string>entity.name.type.meta-data.custom.actionscript.3</string>
+				</dict>
+			</dict>
+			<key>end</key>
+			<string>(\])</string>
+			<key>endCaptures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.meta-data.end.actionscript.3</string>
+				</dict>
+			</dict>
+			<key>name</key>
+			<string>storage.type.meta-data.custom.actionscript.3</string>
+			<key>patterns</key>
+			<array>
+				<dict>
+					<key>include</key>
+					<string>#strings</string>
+				</dict>
+			</array>
+		</dict>
 		<key>compiler-metadata-swf</key>
 		<dict>
 			<key>begin</key>
@@ -493,6 +534,10 @@
 				<dict>
 					<key>include</key>
 					<string>#compiler-metadata</string>
+				</dict>
+				<dict>
+					<key>include</key>
+					<string>#compiler-metadata-custom</string>
 				</dict>
 				<dict>
 					<key>include</key>
@@ -837,6 +882,10 @@
 				<dict>
 					<key>include</key>
 					<string>#compiler-metadata</string>
+				</dict>
+				<dict>
+					<key>include</key>
+					<string>#compiler-metadata-custom</string>
 				</dict>
 				<dict>
 					<key>include</key>
@@ -1485,14 +1534,82 @@
 			<key>name</key>
 			<string>punctuation.separator.actionscript.3</string>
 		</dict>
+		<key>function</key>
+		<dict>
+			<key>begin</key>
+			<string>(?x)
+			         ^\s*
+    			     (public|\w+)\s+ # Namespace is either public or custom
+    			     (function)\s+
+    			     (\s*\w+)                                                 # Method name.
+    			     \s*(\()</string>
+			<key>beginCaptures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>storage.type.namespace.actionscript.3</string>
+				</dict>
+				<key>2</key>
+				<dict>
+					<key>name</key>
+					<string>storage.type.function.actionscript.3</string>
+				</dict>
+				<key>3</key>
+				<dict>
+					<key>name</key>
+					<string>entity.name.function.actionscript.3</string>
+				</dict>
+				<key>4</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.parameters.begin.actionscript.3</string>
+				</dict>
+			</dict>
+			<key>end</key>
+			<string>(?=\{)</string>
+			<key>endCaptures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.parameters.end.actionscript.3</string>
+				</dict>
+			</dict>
+			<key>name</key>
+			<string>meta.definition.method.actionscript.3</string>
+			<key>patterns</key>
+			<array>
+				<dict>
+					<key>include</key>
+					<string>#comments</string>
+				</dict>
+				<dict>
+					<key>include</key>
+					<string>#method-parameters</string>
+				</dict>
+				<dict>
+					<key>include</key>
+					<string>#method-parameters-default</string>
+				</dict>
+				<dict>
+					<key>include</key>
+					<string>#list-seperator</string>
+				</dict>
+				<dict>
+					<key>include</key>
+					<string>#method-return</string>
+				</dict>
+			</array>
+		</dict>
 		<key>method</key>
 		<dict>
 			<key>begin</key>
 			<string>(?x)
 			         ^\s*
-    			     ((override|static)\s+)?                                  # Optional override or static
+    			     ((override|static)\s+){0,2}                                  # Optional override or static
     			     (public|private|protected|internal|final|dynamic|\w+)\s+ # Namespace
-    			     ((static)\s+)?                                           # Optional static.
+    			     ((override|static)\s+){0,2}                                           # Optional static.
     			     (function)\s+
     			     (\s*\w+)                                                 # Method name.
     			     \s*(\()</string>
@@ -1593,9 +1710,9 @@
 					<key>begin</key>
 					<string>(?x)                                                               # Extended mode
 					         ^\s*                                                               # Start of line, optional whitespace
-    			             ((override|static)\s+)?                                            # Optional override
+    			             ((override|static)\s+){0,2}                                            # Optional override
     			             (public|private|protected|internal|final|dynamic|\w+)\s+           # namespace declaration
-    			             ((static)\s+)?                                                     # Optional static
+    			             ((static)\s+){0,2}                                                     # Optional static
     			             (function)\s*                                                      # function declaration
                              (set)\s+                                                           # set declaration
                              (\w+)\s*                                                           # getter name, optional whitespace
@@ -1696,11 +1813,11 @@
 					         ^\s*
     			             (
     			                 (override|static)\s+
-    			             )?
+    			             ){0,2}
     			             (public|private|protected|internal|static|final|dynamic|\w+)\s+
     			             (
-    			                 (static)\s+
-    			             )?
+    			                 (override|static)\s+
+    			             ){0,2}
     			             (function)
     			             \s*
                              (get)
@@ -1997,6 +2114,18 @@
 				</dict>
 				<dict>
 					<key>include</key>
+					<string>meta.function.actionscript.3</string>
+				</dict>
+				<dict>
+					<key>include</key>
+					<string>#function</string>
+				</dict>
+				<dict>
+					<key>include</key>
+					<string>#method-block</string>
+				</dict>
+				<dict>
+					<key>include</key>
 					<string>#class</string>
 				</dict>
 				<dict>
@@ -2021,6 +2150,10 @@
 				</dict>
 				<dict>
 					<key>include</key>
+					<string>#compiler-metadata-custom</string>
+				</dict>
+				<dict>
+					<key>include</key>
 					<string>#language-storage</string>
 				</dict>
 			</array>
@@ -2040,7 +2173,7 @@
 		<key>package-signature</key>
 		<dict>
 			<key>begin</key>
-			<string>(package)\s+</string>
+			<string>(package)</string>
 			<key>beginCaptures</key>
 			<dict>
 				<key>1</key>
@@ -2050,7 +2183,7 @@
 				</dict>
 			</dict>
 			<key>end</key>
-			<string>([\w\.]+)?</string>
+			<string>\s+([\w\.]+)?</string>
 			<key>endCaptures</key>
 			<dict>
 				<key>1</key>
