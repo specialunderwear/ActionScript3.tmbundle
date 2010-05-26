@@ -40,8 +40,9 @@ module FlexMate
       def show_results(word, results)
 
         require ENV['TM_SUPPORT_PATH'] + '/lib/tm/htmloutput'
-
-        r = TextMate::HTMLOutput.show(
+        require ENV['TM_SUPPORT_PATH'] + '/lib/exit_codes'
+        
+        TextMate::HTMLOutput.show(
           :title => "Documentation for ‘#{word}’",
           :sub_title => "ActionScript 3 / Flex Dictionary"
         ) do |io|
@@ -53,8 +54,7 @@ module FlexMate
           HTML
         end
 
-        require ENV['TM_SUPPORT_PATH'] + '/lib/exit_codes'
-        TextMate.exit_show_html(r)
+        TextMate.exit_show_html
 
       end
 
@@ -100,7 +100,7 @@ class LangReference
 
     setup_regex(word)
 
-    IO.readlines(@toc).each do |line|
+    ::IO.readlines(@toc).each do |line|
       if line =~ @exact_rgx
         m = $1 
         p = cp(m)
@@ -131,11 +131,11 @@ class LangReference
       out << "<p><ul>"
 
       @found.each { |e|
-        
-        if File.exist?(e[:href])
-          out << "<li><a title='#{e[:title]}' href='tm-file://#{e[:href]}'>#{e[:class]}</a></li>"
+        doc_file = e[:href].sub(/#.+$/,'')
+        if File.exist?(doc_file)
+          out << "<li><a title='#{e[:title]}' href='tm-file://#{e[:href]}'>#{e[:class]}</a></li>\n"
         else
-          out << "<li><span title='In search index but document is missing.'>#{e[:class]}</span></li>"
+          out << "<li><span title='In search index but document is missing.'>#{e[:class]}</span></li>\n"
         end
         
       }

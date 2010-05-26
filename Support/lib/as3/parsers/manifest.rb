@@ -22,6 +22,10 @@
 
 # Utility class for working with ActionScript manifest files.
 #
+# Note: REXML has been avoided for speed reasons, but this means the xml 
+# handling is fragile. Specifically if the class and id attributes are not in
+# the expected order then it will break.
+#
 class Manifest
 
   def initialize(doc)
@@ -42,13 +46,14 @@ class Manifest
     
   def classes
 
-    rgx = /<component\s+id=["'](\w+)["']\s+class=["']([\w.]+)["']/
+    rgx = /<component(?m:[^\w]+)id=["'](\w+)["'](?m:[^\w]+)class=["']([\w.]+)["']/
+
     cls = []
-    @doc.each { |line|  cls << $1 if line =~ rgx }
+    @doc.scan(rgx) { |a,b| cls << a }
     cls
-    
+
   end
-  
+
   protected
   
   # Strips comments from the document.
@@ -65,56 +70,6 @@ class Manifest
   
 end
 
-if __FILE__ == $0
-  
-  TEST_MANIFEST = '<?xml version="1.0"?>
-<componentPackage>
-  <component id="ApplicationMediator" class="org.helvector.game.view.mediators.ApplicationMediator" />
-  <component id="ApplicationProxy" class=\'org.helvector.game.model.proxies.ApplicationProxy\' />
-  <!-- <component id="HowToPlayDialogMediator" class="org.helvector.game.view.mediators.dialogs.HowToPlayDialogMediator" /> -->
-  <component id=\'InitialLoadProportions\' class="org.helvector.game.io.InitialLoadProportions" />
-  <component id="LapTimes" class="org.helvector.game.view.controls.game.LapTimes" />
-  <!--
-  <component id="LeaderBoardEntryVO" class="org.helvector.game.model.domain.local.LeaderBoardEntryVO" />
-  -->
-  <component id="RaceData" 
-             class="org.helvector.game.constants.RaceData" />
-  <component id="RaceVO" class="org.helvector.game.model.domain.local.RaceVO" />
-  <component id="RemoteServices" class="org.helvector.game.io.RemoteServices" />
-  <component id="TrackingCallCommand" class="org.helvector.game.controller.TrackingCallCommand" />
-  <component id="UserProxy" class="org.helvector.game.model.proxies.domain.UserProxy" />
-</componentPackage>'
-  
-   require "test/unit"
-
-   class TestMxmlDoc < Test::Unit::TestCase
-
-     def test_find_class
-       
-       m = Manifest.new(TEST_MANIFEST)
-
-       found = m.find_class('RaceData')       
-       assert_equal('org.helvector.game.constants.RaceData',found)
-       
-       found = m.find_class('DummyClass')
-       assert_equal(nil,found)
-
-       found = m.find_class('ApplicationProxy')
-       assert_equal('org.helvector.game.model.proxies.ApplicationProxy',found)
-       
-     end
-     
-     def test_classes
-      
-      m = Manifest.new(TEST_MANIFEST)
-      c = m.classes
-      
-      assert_equal('ApplicationMediator', c[0])
-      assert_equal('ApplicationProxy', c[1])
-      assert_equal('InitialLoadProportions', c[2])
-      assert_equal('LapTimes', c[3])
-      assert_equal('RaceData', c[4])
-      
-     end
-   end
-end
+# if __FILE__ == $0
+# 
+# end

@@ -15,6 +15,7 @@ class MxmlcExhaust
   CONFIGURATION_MATCH    = "configuration_match"
   ERROR_WARN_MATCH       = "error_warn_match"
   RECOMPILE_REASON_MATCH = "recompile_reason_match"
+  UNABLE_TO_OPEN_MATCH   = "unable_to_open_match"
 
   # Instance initialisation. Creates the regex objects once, and set's the
   # error counter to 0. One instance should be created per mxmlc compile
@@ -29,9 +30,10 @@ class MxmlcExhaust
     @input = []
 
     @error_and_warn_regex = /(\/.*?)(\(([0-9]+)\)|):.*(Error|Warning):\s*(.*)$/
-    @config_file_regex    = /(^Loading configuration file )(.*)$/
+    @config_file_regex    = /(^\s*Loading configuration file )(.*)$/
     @recompile_file_regex = /(^Recompile: )(.*)$/
     @reason_file_regex    = /(^.*, )(.*,)(.*)$/
+    @unable_to_open_regex = /(^Error: unable to open).*/
 
   end
 
@@ -55,6 +57,18 @@ class MxmlcExhaust
     output << "<br/>Build complete, #{ @error_count.to_s } #{err} occured."
     print output if print_output
     output
+  end
+  
+  def raw(id='z')
+    output = ""
+    output << '<br/><div class="raw_out_#{id}"><span class="showhide">'
+    output << "<a href=\"javascript:hideElement('raw_out_#{id}')\" id='raw_out_#{id}_h' style='display: none;'>&#x25BC; Hide Raw Output</a>"
+    output << "<a href=\"javascript:showElement('raw_out_#{id}')\" id='raw_out_#{id}_s' style=''>&#x25B6; Show Raw Output</a>"
+    output << '</span></div>'
+    output << '<div class="inner" id="raw_out_'+id+'_b" style="display: none;"><br/>'
+    output << "<pre><code>#{input.to_s}</code></pre><br/></div>"
+    print output if print_output
+    output    
   end
   
   protected
@@ -87,6 +101,14 @@ class MxmlcExhaust
         return out
       end
       
+      match = @unable_to_open_regex.match(str)
+      unless match === nil
+        @error_count += 1
+        @last_match = UNABLE_TO_OPEN_MATCH
+        out = "\n <h4>File does not exist</h4>\n #{out}"
+        return out
+      end
+
       match = @config_file_regex.match(str)
       unless match === nil
           out << "<br/>" if @last_match != CONFIGURATION_MATCH
@@ -123,6 +145,8 @@ class MxmlcExhaust
         @error_count += 1
       elsif str =~ /^\s*$/
         out << "<!-- empty -->"
+      elsif str =~ /Nothing has changed since the last compile\. Skip\.\.\./
+        out << "<br/>#{str}"
       elsif str =~ /^(Copyright|Version|Adobe)/
          out << "#{str}<br/>"
       end
@@ -142,74 +166,6 @@ class MxmlcExhaust
 
 end
 
-if __FILE__ == $0
-
-  require ENV['TM_SUPPORT_PATH'] + '/lib/escape'
-  
-  require "test/unit"
-  
-  class TestSettings < Test::Unit::TestCase
-    
-    def in_out
-      [
-        { :in => 'Loading configuration file /Developer/SDKs/flex_sdk_3.1.0/frameworks/flex-config.xml',
-          :out => '<br/>Loading configuration file: <a title="Click to open /Developer/SDKs/flex_sdk_3.1.0/frameworks/flex-config.xml" href="txmt://open?url=file:///Developer/SDKs/flex_sdk_3.1.0/frameworks/flex-config.xml" >flex-config.xml</a><br/>'
-        },
-        {
-          :in => "/Users/simon/Documents/code/actionscript_3/flex_unit/trunk/FlexUnitTest/src/FlexUnitTestRunner.mxml: Error: Unable to locate specified base class 'FlexUnitTestRunnerApplication' for component class 'FlexUnitTestRunner'.",
-          :out => "<br/>Error Unable to locate specified base class 'FlexUnitTestRunnerApplication' for component class 'FlexUnitTestRunner'. in <a title=\"/Users/simon/Documents/code/actionscript_3/flex_unit/trunk/FlexUnitTest/src/FlexUnitTestRunner.mxml\" href=\"txmt://open?url=file:///Users/simon/Documents/code/actionscript_3/flex_unit/trunk/FlexUnitTest/src/FlexUnitTestRunner.mxml\">FlexUnitTestRunner.mxml</a><br/>", 
-        },
-        {
-          :in => "deploy/CompileTest.swf (417 bytes)",
-          :out => "<script type=\"text/javascript\" charset=\"utf-8\">function openSwf(){TextMate.system('open deploy/CompileTest.swf', null);}</script><br/><a href='javascript:openSwf()' title='Click to run (if there is space in the file path this may not work).'>deploy/CompileTest.swf</a> (417 bytes)<br/>"
-        },
-        {
-          :in => "Error: could not find source for class BlahBlah:mxml",
-          :out => "<pre>Error: could not find source for class BlahBlah:mxml</pre>"
-        },
-        {
-          :in => " ",
-          :out => "<!-- empty -->"
-        },
-        {
-          :in => "Adobe Compc (Flex Component Compiler)",
-          :out => "Adobe Compc (Flex Component Compiler)<br/>"
-        },
-        {
-          :in => "Version 3.4.0 build 9271",
-          :out => "Version 3.4.0 build 9271<br/>"
-        },
-        {
-          :in => "Copyright (c) 2004-2007 Adobe Systems, Inc. All rights reserved.",
-          :out => "Copyright (c) 2004-2007 Adobe Systems, Inc. All rights reserved.<br/>"
-        }
-        # Added the following after getting problematic output when compiling the RobotLegs helvector gallery, but couldn't work out what the problem was.
-        #,{
-        #  :in => "/Users/simon/src/helvector/robotlegs-framework/src/org/robotlegs/base/CommandMap.as(64): col: 19 Warning: The super() statement will be executed prior to entering this constructor.  Add a call to super() within the constructor if you want to explicitly control when it is executed.",
-        #  :out => "???"
-        #},
-        #{
-        #  :in => "public function CommandMap(eventDispatcher:IEventDispatcher, injector:IInjector, reflector:IReflector)",
-        #  :out => ""
-        #}
-      ]
-    end
-    
-    def test_exhaust
-      
-      exhaust = MxmlcExhaust.new
-      
-      in_out.each { |e|
-        assert_equal(e[:out], exhaust.line(e[:in]))
-      }
-      
-      assert_equal(2, exhaust.error_count)
-      assert_equal(in_out.length, exhaust.line_count) 
-      
-      assert_equal(in_out.map { |e| e[:in] }.to_s, exhaust.input.to_s)
-      
-    end
-    
-  end
-  
-end
+# if __FILE__ == $0
+#     
+# end

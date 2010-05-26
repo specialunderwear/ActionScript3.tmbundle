@@ -1,0 +1,79 @@
+#!/usr/bin/env ruby
+# encoding: utf-8
+
+require ENV['TM_SUPPORT_PATH'] + '/lib/escape'
+require ENV['TM_SUPPORT_PATH'] + '/lib/exit_codes'
+require ENV['TM_SUPPORT_PATH'] + '/lib/textmate'
+require ENV['TM_SUPPORT_PATH'] + '/lib/tm/process'
+
+require File.expand_path(File.dirname(__FILE__)) + '/../lib/add_lib'
+
+require 'find'
+require 'fm/flex_mate'
+require 'fm/sdk'
+require 'fm/compiler'
+require 'fm/settings'
+require 'as3/source_tools'
+
+if ARGV[0] == "-and-run"
+  
+  puts "Build & Run is on the TODO list."
+  TextMate.exit_show_html
+  exit
+  
+end
+
+#Store for later..
+use_fcsh = ENV['TM_FLEX_USE_FCSH'] || nil
+proj_dir = ENV['TM_PROJECT_DIRECTORY'] || ''
+#Check for custom build files and execute them where they exist.
+
+custom = "#{proj_dir}/#{ENV['TM_FLEX_BUILD_FILE']}"
+
+if File.file?(custom)
+
+  if custom =~ /\.y(a)?ml$/
+    require 'fm/yaml_tool'
+    FlexMate::YamlTool.build
+  elsif File.executable?(custom)
+    TextMate::Process.run(custom) do |str|
+      STDOUT << str
+    end
+  else
+    puts "WARNING: #{custom} not executable."
+  end
+  TextMate.exit_show_html
+
+elsif ENV['TM_PROJECT_DIRECTORY'] && (use_fcsh != nil)
+
+  #Requires are needed by FlexMate.required_settings + check_valid_paths
+  require ENV['TM_SUPPORT_PATH'] + '/lib/web_preview'
+  require ENV['TM_SUPPORT_PATH'] + '/lib/tm/htmloutput'
+
+  require 'fc/fcshd'
+  require 'fm/as3project'
+  require 'fm/mxmlc_exhaust'
+
+  STDOUT.sync = true
+  
+  if use_fcsh == 'fcshd'
+    c = FlexMate::FcshdCompiler.new
+    c.build
+  else
+    # Use fcsh via the Terminal.app
+    c = FlexMate::FcshCompiler.new
+    c.build
+    TextMate.exit_discard
+  end
+
+else
+
+  STDOUT.sync = true
+
+  c = FlexMate::Compiler.new
+  c.build
+
+  #TODO: Get the html window to show immediately.
+  TextMate.exit_show_html
+
+end

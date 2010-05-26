@@ -12,6 +12,21 @@ Features:
  * Class and Component Templates.
  * Shortcut's to open Super Class, Code Behind and Import file.
 
+## sg Branch
+
+My work in progress branch of the bundle, the version I use on a day to day basis
+whilst developing. Essentially it slims down the 'master' branch and adds a 
+little alpha and beta flavour. Maintenance, tweaks and feature improvements will 
+be found here first - but won't be guaranteed to make it into the official bundle.
+
+'master' differences:
+
+ * FCSH build integrated into TM. 
+ * Tidy command.
+ * FDB Support
+    * Set breakpoints using  `/*>BP<*/`
+    * Start Debugger - Parses current doc for breakpoints and sets them in a fdb session.
+
 # Installation
 
 Via download:
@@ -186,9 +201,10 @@ To have code banners inserted into the class templates set the value of this
 variable to anything.
 
 * `TM_FLEX_USE_FCSH`  
-Set this property to anything if you wish to compile using fcsh. This will give
-you the added benefit of compiler caching and should be noticeably faster, 
-especially on larger projects.
+To compile using fcsh via the Terminal.app set this property to anything. To use
+a custom TextMate integrated server for fcsh then set it to 'fcshd'. Either
+option will give you the added benefit of compiler caching and should be 
+noticeably faster, especially on larger projects.
 
 * `TM_FLEX_BACKGROUND_TERMINAL`  
 If you are compiling using fcsh and the terminal setting this to anything will
@@ -234,13 +250,13 @@ Christian Swinehart
 ChromaticRain  
 [Daniel Parnell][daniel_parnell]  
 [Gabriel Laet][gabriel_laet]  
-Jeremy Sachs   
+[Jeremy Sachs][jeremy_sachs]  
 [Joachim][joachim]  
 [Kristofer Joseph][kristoferjoseph]  
 [Lars van de Kerkhof][specialunderwear]  
 [Leo Soto][leo_soto]  
 [Lucas Dupin][lucasdupin]  
-Luke Daley  
+[Luke Daley][luke_daley]  
 [Mark Llobrera][mark_llobrera]  
 [Theo Hultberg][theo]  
 [Thomas Aylott][thomas_aylott]  
@@ -300,3 +316,5 @@ An exception is made for files in readable text which contain their own license 
 [lucasdupin]: http://github.com/lucasdupin
 [gabriel_laet]: http://github.com/gabriel-laet
 [leo_soto]: http://code.google.com/p/flex-compiler-shell-daemon/
+[jeremy_sachs]: http://www.rezmason.net/
+[luke_daley]: http://github.com/alkemist

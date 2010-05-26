@@ -19,22 +19,20 @@ module FlexMate
       cmd = build_tool(s)
 
       TextMate.require_cmd(cmd.name)
-            
+      
       init_html(cmd)
       
       exhaust = get_exhaust
+      
+      # This works... when, occasionally, using TextMate::Process fails. Memory allocation maybe?
+      #{}`#{cmd.line}`.each { |str| STDOUT << exhaust.line(str) }
+
       TextMate::Process.run(cmd.line) do |str|
         STDOUT << exhaust.line(str)
       end
 
+      STDOUT << exhaust.raw
       STDOUT << exhaust.complete
-      
-      STDOUT << '<br/><br/><div class="raw_out"><span class="showhide">'
-      STDOUT << "<a href=\"javascript:hideElement('raw_out')\" id='raw_out_h' style='display: none;'>&#x25BC; Hide Raw Output</a>"
-      STDOUT << "<a href=\"javascript:showElement('raw_out')\" id='raw_out_s' style=''>&#x25B6; Show Raw Output</a>"
-      STDOUT << '</span></div>'
-      STDOUT << '<div class="inner" id="raw_out_b" style="display: none;"><br/>'
-      STDOUT << "<code>#{exhaust.input.to_s}</code><br/>"      
       
       html_footer
 
@@ -47,6 +45,7 @@ module FlexMate
     def init_html(cmd)
       
       require ENV['TM_SUPPORT_PATH'] + '/lib/web_preview'
+
       puts html_head( :window_title => "ActionScript 3 Build Command",
                       :page_title => "Build (#{cmd.name})",
                       :sub_title => "#{cmd.file_specs_name}" )
@@ -67,6 +66,7 @@ module FlexMate
     #
     def build_tool(settings)
         return CompcCommand.new(settings) if settings.is_swc
+        return AMxmlcCommand.new(settings) if settings.is_air
         return MxmlcCommand.new(settings)
     end
 
@@ -114,6 +114,62 @@ module FlexMate
     
   end
 
+  class FcshdCompiler < Compiler
+    def initialize
+      super
+    end
+    
+    # Run mxmlc using the fcshd to compile.
+    #
+    def build
+      
+      TextMate.require_cmd('fcsh')
+      
+      s = FlexMate::Settings.new
+      
+      ENV['TM_FLEX_FILE_SPECS'] = s.file_specs
+      ENV['TM_FLEX_OUTPUT'] = s.flex_output
+      
+      #WARN: Accessing s.flex_output after this point will fail. This is because 
+      #      settings expects TM_FLEX_OUTPUT to be relative to the project root
+      #      + we've just set it to a full path.
+      FlexMate.required_settings({ :files => ['TM_FLEX_FILE_SPECS'],
+                                   :evars => ['TM_FLEX_OUTPUT'] })
+      
+      cmd = build_tool(s)
+      
+      #Make sure there are no spaces for fcsh to trip up on.
+      FlexMate.check_valid_paths([cmd.file_specs,cmd.o])
+      
+      FCSHD.generate_view('Fcshd Compiler')
+
+      exhaust = get_exhaust
+      
+      #Update status if needed
+      FCSHD.set_status 'launching' if not FCSHD_SERVER.running
+
+      # run the compiler and print filtered error messages
+      FCSHD_SERVER.start_server do
+
+        FCSHD.set_status 'up'
+
+        STDOUT << "<h3>Compiling, #{cmd.file_specs_name}</h3>"
+
+        FCSHD_SERVER.build(cmd.line).each_line do |ln|
+          STDOUT << exhaust.line(ln)
+        end
+
+        STDOUT << exhaust.raw
+        STDOUT << exhaust.complete
+
+        html_footer
+
+      end
+      
+    end
+    
+  end
+  
 end
 
 # Object to encapsulate a mxmlc command and its arguments.
@@ -170,6 +226,32 @@ class CompcCommand < MxmlcCommand
 
 end
 
+# Object to encapsulate a amxmlc command and its arguments.
+#
+class AMxmlcCommand < MxmlcCommand
+  
+  def initialize(settings)
+    super(settings)
+  end 
+  
+  def line
+    #Note: If you open the amxmlc tool you find it's just a proxy to mxmlc.
+    #      However using amxmlc with fcsh doesn't work (SDK 3.5) so it's worth 
+    #      the risk of failure by being exposed to internal changes to amxmlc in
+    #      future revisions.    
+    "#{name} +configname=air -file-specs=#{e_sh file_specs}"
+  end
+
+  def file_specs_name
+    File.basename(file_specs)
+  end
+  
+  def to_s
+    "#{name} +configname=air -file-specs=#{file_specs}"
+  end
+
+end
+
 if __FILE__ == $0
 
   require ENV['TM_SUPPORT_PATH'] + '/lib/escape'
@@ -187,7 +269,5 @@ if __FILE__ == $0
   FlexMate::Compiler.new.build
   
   #FlexMate::FcshCompiler.new.build
-
-  FlexMate::Compiler.new.build
 
 end
