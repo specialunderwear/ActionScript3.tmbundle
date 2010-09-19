@@ -185,11 +185,11 @@ class MxmlcCommand
     @name = 'mxmlc'
     @o = settings.flex_output
     @file_specs = settings.file_specs
-    @flex_options = settings.flex_options
+    @flex_options = settings.respond_to?('flex_options') ? settings.flex_options : ""
   end
 
   def line
-    "#{name} -file-specs=#{e_sh file_specs} -o=#{e_sh o} #{flex_options}"
+    "#{name} -file-specs=#{e_sh file_specs} -o=#{e_sh o} #{flex_options}".strip()
   end
 
   def file_specs_name
@@ -197,7 +197,7 @@ class MxmlcCommand
   end
   
   def to_s
-    "-file-specs=#{file_specs}\n-o=#{e_sh o} #{flex_options}"
+    "-file-specs=#{file_specs}\n-o=#{e_sh o} #{flex_options}".strip()
   end
 
 end
