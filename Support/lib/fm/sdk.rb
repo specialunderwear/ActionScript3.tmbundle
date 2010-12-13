@@ -14,6 +14,8 @@ module FlexMate
       # bundle preference for the active list.
       #
       FLEX_DIRS = [ "/Developer/SDKs/flex_sdk_4",
+                    "/Developer/SDKs/flex_sdk_4.5.0",
+                    "/Developer/SDKs/flex_sdk_4.1.0",
                     "/Developer/SDKs/flex_sdk_4.0.0",
                     "/Developer/SDKs/flex_sdk_3",
                     "/Developer/SDKs/flex_sdk_3.5.0",
@@ -27,7 +29,13 @@ module FlexMate
                     "/Applications/flex_sdk_3",
                     "/Applications/flex_sdk_2",
                     "/Applications/Flex",
-                    "/Applications/Adobe Flex Builder 3/sdks/3.5.0",
+                    "/Applications/Adobe Flash Builder 4/sdks/4.5.0",
+                    "/Applications/Adobe Flash Builder 4/sdks/4.1.0",
+                    "/Applications/Adobe Flash Builder 4/sdks/4.0.0",
+                    "/Applications/Adobe Flash Builder 4/sdks/3.5.0",
+                    "/Applications/Adobe Flash Builder 4 Plug-in/sdks/4.5.0",
+                    "/Applications/Adobe Flash Builder 4 Plug-in/sdks/4.0.0",
+                    "/Applications/Adobe Flash Builder 4 Plug-in/sdks/3.5.0",
                     "/Applications/Adobe Flex Builder 3/sdks/3.4.0",
                     "/Applications/Adobe Flex Builder 3/sdks/3.3.0",
                     "/Applications/Adobe Flex Builder 3/sdks/3.2.0",
@@ -77,8 +85,8 @@ module FlexMate
         if user_path
           return user_path if File.directory? user_path
         end
-        
-        # Beware when using a shebang in a TextMate command as .textmate_init 
+
+        # Beware when using a shebang in a TextMate command as .textmate_init
         # won't be sourced and the `which fcsh` *may* be unreliable.
         user_path = `which fcsh`
         unless user_path.empty?
@@ -103,8 +111,9 @@ module FlexMate
           }
         end
 
+        nil
       end
-      
+
       # Returns the path to the flex-config.xml doc.
       #
       def flex_config
