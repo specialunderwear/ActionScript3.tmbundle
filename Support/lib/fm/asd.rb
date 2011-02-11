@@ -238,7 +238,7 @@ class AdobeHelpAS3LangReference < FlashCS4LangReference
   def initialize()
     super
     @name     = 'Adobe help local files'
-    @path     = '/Users/ebone/Library/Preferences/chc.4875E02D9FB21EE389F73B8D1702B320485DF8CE.1/Local Store/Help/en_US/Flash/CS5/AS3LR'
+    @path     = "/Users/#{ENV['USER']}/Library/Preferences/chc.4875E02D9FB21EE389F73B8D1702B320485DF8CE.1/Local Store/Help/en_US/Flash/CS5/AS3LR"
     @toc      = "#{@path}/helpmap.txt"
     @lang_ref = "<a href='tm-file://#{@path}/index.html'"+
                 "title = '#{@name} - ActionScript 3.0 Language and Components Reference Index'>#{@name} ActionScript 3.0 Language Reference</a>"
