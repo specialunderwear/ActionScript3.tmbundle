@@ -18,9 +18,12 @@ module FlexMate
         fx = FlexLangReference.new
         results = fx.search(word)
 
+        adobe_help = AdobeHelpAS3LangReference.new
+        results << adobe_help.search(word) if adobe_help.usable
+        
         fl4 = FlashCS4LangReference.new
         results << fl4.search(word) if fl4.usable
-
+        
         fl3 = FlashCS3LangReference.new
         results << fl3.search(word) if fl3.usable && !fl4.usable
 
@@ -227,6 +230,25 @@ class FlashCS4LangReference < LangReference
     @exact_rgx = /:#{word}\t(.*)\t/
     @partial_rgx = /:#{word}[\w:]+\t(.*)(\t)/
   end
+
+end
+
+class AdobeHelpAS3LangReference < FlashCS4LangReference
+
+  def initialize()
+    super
+    @name     = 'Adobe help local files'
+    @path     = '/Users/ebone/Library/Preferences/chc.4875E02D9FB21EE389F73B8D1702B320485DF8CE.1/Local Store/Help/en_US/Flash/CS5/AS3LR'
+    @toc      = "#{@path}/helpmap.txt"
+    @lang_ref = "<a href='tm-file://#{@path}/index.html'"+
+                "title = '#{@name} - ActionScript 3.0 Language and Components Reference Index'>#{@name} ActionScript 3.0 Language Reference</a>"
+  end
+  
+  def setup_regex(word)
+    @exact_rgx = /.*\t(.*)\t#{word}$/
+    @partial_rgx = /.*\t(.*)\t#{word}/
+  end
+  
 
 end
 
