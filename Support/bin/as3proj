@@ -1,0 +1,45 @@
+#!/usr/bin/env ruby -wKU
+
+require 'rubygems'
+require 'Plist'
+
+puts ARGV
+if ARGV.length >= 1
+  project_config = Plist::parse_xml(ARGV[0])
+  
+  if ARGV.length >= 2
+    root_class = ARGV[1]
+  else
+    root_class = Dir.glob('src/*.as')[0]
+  end
+  
+  bin_name = root_class[4..-4].downcase
+  
+  project_config['shellVariables'] = [
+    {
+      'enabled' => true,
+      'value' => root_class,
+      'variable' => 'TM_FLEX_FILE_SPECS',
+    },
+    {
+      'enabled' => true,
+      'value' => "bin/#{bin_name}.swf",
+      'variable' => 'TM_FLEX_OUTPUT',
+    },
+    {
+      'enabled' => true,
+      'value' => 'true',
+      'variable' => 'TM_FLEX_USE_FCSH',
+    },
+    {
+      'enabled' => true,
+      'value' => '/Developer/SDKs/flex_sdk_4',
+      'variable' => 'TM_FLEX_PATH',
+    }
+  ]
+  
+  project_config.save_plist(ARGV[0])
+  
+else
+  puts "pass the tmproj file as an argument and optionally the As file path: as3proj bla.tmproj src/Blaat.as"
+end
